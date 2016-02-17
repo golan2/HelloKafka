@@ -3,8 +3,7 @@ package golan.izik;
 import org.apache.commons.cli.*;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by golaniz on 09/02/2016.
@@ -25,7 +24,8 @@ public class Utils {
         return strDate;
     }
 
-    static HashMap<String, String> parseCommandLineArgs(String[] args) throws ParseException {
+    @SuppressWarnings("AccessStaticViaInstance")
+    public static HashMap<String, String> parseCommandLineArgs(String[] args) throws ParseException {
         Options o = new Options();
         o.addOption(OptionBuilder.hasArgs(1).withArgName("Kafka Server").withDescription("Where is Kafka").isRequired(false).create(ARG_SERVER));
         o.addOption(OptionBuilder.hasArgs(1).withArgName("Topic Prefix").withDescription("The Prefix for each message").isRequired(false).create(ARG_TOPIC_PREFIX));
@@ -47,4 +47,16 @@ public class Utils {
         result.put(ARG_MAX_TIME_TO_WAIT, line.getOptionValue    (ARG_MAX_TIME_TO_WAIT, "25"   ));
         return result;
     }
+
+    public static void consolog(String s) {
+        System.out.println(getCurrentDateAndTime()+"~~T["+Thread.currentThread().getName()+"] "  + s );
+    }
+
+    private static final SimpleDateFormat  sdf        = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS", Locale.US);
+    private static final GregorianCalendar calendar   = new GregorianCalendar(TimeZone.getTimeZone("US/Central"));
+    private static String getCurrentDateAndTime() {
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        return sdf.format(calendar.getTime());
+    }
+
 }

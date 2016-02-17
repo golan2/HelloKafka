@@ -1,5 +1,6 @@
-package golan.izik;
+package golan.izik.producer;
 
+import golan.izik.Utils;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
@@ -33,7 +34,7 @@ public class ProducerTask implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println(Utils.getCurrentTimeStamp() + " ProducerTask - run - BEGIN - PID=["+this.producerId+"] topicName=["+topicName+"] messagesCount=["+messages.size()+"]");
+            Utils.consolog("ProducerTask - run - BEGIN - PID=["+this.producerId+"] topicName=["+topicName+"] messagesCount=["+messages.size()+"]");
             Properties props = new Properties();
             props.put("bootstrap.servers", kafkaServer);
             props.put("acks", "all");
@@ -46,23 +47,26 @@ public class ProducerTask implements Runnable {
 
 
             Producer<String, String> producer = new KafkaProducer<>(props);
-            System.out.println(Utils.getCurrentTimeStamp() + " PID=["+this.producerId+"] Sending ["+messages.size()+"] messages to topic ["+topicName+"]...");
+
+            Utils.consolog("PID=["+this.producerId+"] Sending ["+messages.size()+"] messages to topic ["+topicName+"]...");
             int index = 1;
             for (String message : messages) {
-                String msg = "Msg=[" + message + "] MsgIndx=[" + index + "/" + messages.size() + "] PID=[" + this.producerId + "]";
-                System.out.println(Utils.getCurrentTimeStamp() + msg + " - Sending...");
-                producer.send(new ProducerRecord<>(topicName, UUID.randomUUID().toString(), msg));
+                String msg = this.producerId + "_" + message;
+//                String msg = "Msg=[" + message + "] MsgIndx=[" + index + "/" + messages.size() + "] PID=[" + this.producerId + "]";
+                UUID key = UUID.randomUUID();
+                Utils.consolog("Sending key=["+key+"] msg=["+msg+"]...");
+                producer.send(new ProducerRecord<>(topicName, key.toString(), msg));
                 index++;
             }
-            System.out.println(Utils.getCurrentTimeStamp() + " PID=["+this.producerId+"] Done Sending!");
+            Utils.consolog("PID=["+this.producerId+"] Done Sending!");
 
 
-            System.out.println(Utils.getCurrentTimeStamp() + " PID=["+this.producerId+"] Closing...");
+            Utils.consolog("PID=["+this.producerId+"] Closing...");
             producer.close();
         } finally {
             finished = true;
         }
-        System.out.println(Utils.getCurrentTimeStamp() + " ProducerTask - run - END - PID=["+this.producerId+"]");
+        Utils.consolog("ProducerTask - run - END - PID=["+this.producerId+"]");
     }
 
     public int getProducerId() {

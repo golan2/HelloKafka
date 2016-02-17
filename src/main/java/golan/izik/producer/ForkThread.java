@@ -1,11 +1,9 @@
-package golan.izik;
+package golan.izik.producer;
 
+import golan.izik.Utils;
 import org.apache.commons.cli.ParseException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,16 +22,25 @@ public class ForkThread {
         int messagesCount = Integer.parseInt(map.get(Utils.ARG_MESSAGE_PER_PRODUCER));
 
         ExecutorService executorService = Executors.newFixedThreadPool(producersCount);
-        ArrayList<ProducerTask> producers = new ArrayList<>(producersCount);
+        Map<String, List<ProducerTask>> producers = new HashMap<>();
+//        ArrayList<ProducerTask> producers = new ArrayList<>(producersCount);
 
 
         for (int t = 0; t < topicsCount; t++) {
             String topicName = topicPrefix + String.valueOf(t+1);
+            ArrayList<ProducerTask> tasks = new ArrayList<>(producersCount);
             for (int p = 0; p < producersCount; p++) {
                 List<String> messages = generateMessages(messagePrefix, messagesCount);
                 ProducerTask task = new ProducerTask(map.get(Utils.ARG_SERVER), messages, topicName);
-                producers.add(task);
-                System.out.println(Utils.getCurrentTimeStamp() + " Submitting ProducerTask - PID=["+task.getProducerId()+"] Topic=["+topicName+"]");
+                tasks.add(task);
+            }
+            producers.put(topicName, tasks);
+        }
+
+        for (String topicName : producers.keySet()) {
+            List<ProducerTask> tasks = producers.get(topicName);
+            for (ProducerTask task : tasks) {
+                Utils.consolog("Submitting ProducerTask - PID=["+task.getProducerId()+"] Topic=["+topicName+"]");
                 executorService.submit(task);
             }
         }
@@ -43,30 +50,34 @@ public class ForkThread {
         int maxRetry = maxTimeToWait*1000/SLEEP_TIME ;
         while (!allFinished(producers) && count< maxRetry){
             count++;
-            System.out.println(Utils.getCurrentTimeStamp() + " Waiting ["+count+"]...");
+            Utils.consolog("Waiting ["+count+"]...");
             Thread.sleep(SLEEP_TIME);
         }
 
 
-        System.out.println(Utils.getCurrentTimeStamp() + " Shutting down the executor service...");
+        Utils.consolog("Shutting down the executor service...");
         executorService.shutdown();
-        System.out.println(Utils.getCurrentTimeStamp() + " Done!");
+        Utils.consolog("Done!");
 
 
     }
 
-    private static boolean allFinished(ArrayList<ProducerTask> producers) {
-        for (ProducerTask producer : producers) {
-            if (!producer.isFinished()) return false;
+    private static boolean allFinished(Map<String, List<ProducerTask>> producers) {
+        for (String topicName : producers.keySet()) {
+            List<ProducerTask> tasks = producers.get(topicName);
+            for (ProducerTask task : tasks) {
+                if (!task.isFinished()) return false;
+            }
         }
         return true;
     }
 
     private static List<String> generateMessages(String prefix, int messagesCount) {
-        Random random = new Random();
+
+        long index = new Random().nextInt(10000)*1000;
         List<String> messages = new ArrayList<String>(messagesCount);
         for (int m = 0; m < messagesCount; m++) {
-            messages.add(prefix + "{"+random.nextInt(100000)+"}");
+            messages.add(prefix + index++);
         }
         return messages;
     }
