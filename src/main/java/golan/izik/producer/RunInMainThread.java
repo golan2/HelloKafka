@@ -19,7 +19,7 @@ public class RunInMainThread {
 
         ArrayList<String> messages = new ArrayList<>(1);
         messages.add(map.get(Utils.ARG_MESSAGE_PREFIX)+new Random().nextInt(1000));
-        ProducerTask task = new ProducerTask(map.get(Utils.ARG_SERVER), messages, map.get(Utils.ARG_TOPIC_PREFIX));
+        ProducerTask<String> task = new ProducerTask<>(new ProduceStringMessagesMultiThreads.UUIDKeyGenerator(), map.get(Utils.ARG_SERVER), messages, map.get(Utils.ARG_TOPIC_PREFIX));
         task.run();
         Utils.consolog(Utils.getCurrentTimeStamp() + " Done!");
     }
