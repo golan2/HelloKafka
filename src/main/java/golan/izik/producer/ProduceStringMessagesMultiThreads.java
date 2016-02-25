@@ -33,8 +33,9 @@ public class ProduceStringMessagesMultiThreads extends ProduceMessagesMultiThrea
     }
 
     @Override
-    protected ProducerTask.KeyGenerator getKeyGen() {
-        return new UUIDKeyGenerator();
+    protected ProducerTask.KeyGenerator<String> getKeyGen() {
+        return (message, topicName, producerId) -> String.valueOf(producerId);
+//        return new UUIDKeyGenerator();
     }
 
     protected static class UUIDKeyGenerator implements ProducerTask.KeyGenerator<String> {

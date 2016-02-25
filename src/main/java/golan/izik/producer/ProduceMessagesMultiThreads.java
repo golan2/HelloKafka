@@ -46,7 +46,8 @@ public abstract class ProduceMessagesMultiThreads<T> {
 
         Map<String, List<ProducerTask<T>>> producers = new HashMap<>();        //map key is topic name
         for (int t = 0; t < topicsCount; t++) {
-            String topicName = topicPrefix + String.valueOf(t+1);
+
+            String topicName = topicPrefix + ((topicsCount>1) ? String.valueOf(t+1) : "");
             ArrayList<ProducerTask<T>> tasks = new ArrayList<>(producersPerTopic);
             for (int p = 0; p < producersPerTopic; p++) {
                 List<T> messages = generateMessages(topicName,  messagePrefix, messagesPerProducer);

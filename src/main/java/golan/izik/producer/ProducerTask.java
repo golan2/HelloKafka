@@ -13,6 +13,7 @@ import java.util.UUID;
  * Created by golaniz on 09/02/2016.
  */
 public class ProducerTask<T> implements Runnable {
+    public static final boolean DEBUG = false;
     private static int producer_index = 1;
     private final int producerId;
     private final String kafkaServer;
@@ -32,7 +33,7 @@ public class ProducerTask<T> implements Runnable {
     @Override
     public void run() {
         try {
-            Utils.consolog("ProducerTask - run - BEGIN - PID=[" + this.producerId + "] topicName=[" + topicName + "] messagesCount=[" + messages.size() + "]");
+            if (DEBUG) Utils.consolog("ProducerTask - run - BEGIN - PID=[" + this.producerId + "] topicName=[" + topicName + "] messagesCount=[" + messages.size() + "]");
             Properties props = new Properties();
             props.put("bootstrap.servers", kafkaServer);
             props.put("acks", "all");
@@ -46,15 +47,17 @@ public class ProducerTask<T> implements Runnable {
 
             Producer<String, T> producer = new KafkaProducer<>(props);
 
-            Utils.consolog("PID=[" + this.producerId + "] Sending [" + messages.size() + "] messages to topic [" + topicName + "]...");
+            if (DEBUG) Utils.consolog("PID=[" + this.producerId + "] Sending [" + messages.size() + "] messages to topic [" + topicName + "]...");
+            StringBuilder buf = new StringBuilder();
             for (T message : messages) {
                 String key = this.keygen.generateKey(message, this.topicName, this.producerId);
-                Utils.consolog("\ttopicName=[" + topicName + "] key=[" + key + "] message=[" + message + "]...");
+                if (DEBUG) Utils.consolog("\ttopicName=[" + topicName + "] key=[" + key + "] message=[" + message + "]...");
+                buf.append("\tK=["+key+"] M=["+message+"] ").append("\n");
                 producer.send(new ProducerRecord<>(topicName, key, message));
             }
-            Utils.consolog("PID=[" + this.producerId + "] Done Sending!");
+            Utils.consolog("PID=[" + this.producerId + "] Done Sending ["+messages.size()+"] messages:\n"+buf.toString());
 
-            Utils.consolog("PID=[" + this.producerId + "] Closing...");
+            if (DEBUG) Utils.consolog("PID=[" + this.producerId + "] Closing...");
             producer.close();
         } catch (Exception e) {
             e.printStackTrace();
