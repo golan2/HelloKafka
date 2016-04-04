@@ -1,9 +1,9 @@
 package golan.izik.mng;
 
-import golan.izik.Utils;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
+import kafka.cluster.BrokerEndPoint;
 import kafka.common.ErrorMapping;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.*;
@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SimpleExample {
     public static void main(String args[]) {
@@ -187,9 +188,7 @@ public class SimpleExample {
         }
         if (returnMetaData != null) {
             m_replicaBrokers.clear();
-            for (kafka.cluster.Broker replica : returnMetaData.replicas()) {
-                m_replicaBrokers.add(replica.host());
-            }
+            m_replicaBrokers.addAll(returnMetaData.replicas().stream().map(BrokerEndPoint::host).collect(Collectors.toList()));
         }
         return returnMetaData;
     }

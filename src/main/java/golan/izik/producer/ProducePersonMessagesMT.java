@@ -1,8 +1,8 @@
 package golan.izik.producer;
 
-import golan.izik.Utils;
+import golan.izik.mng.CmdOpts;
+import golan.izik.mng.Utils;
 import org.apache.commons.cli.ParseException;
-import org.apache.kafka.common.serialization.Serializer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,12 +15,11 @@ import java.util.List;
 public class ProducePersonMessagesMT extends ProduceMessagesMultiThreads<ProducePersonMessagesMT.Person> {
 
     public static void main(String[] args) throws ParseException, InterruptedException {
-        HashMap<String, String> map = Utils.parseCommandLineArgs(args);
-        ProducePersonMessagesMT runner = new ProducePersonMessagesMT(map);
+        ProducePersonMessagesMT runner = new ProducePersonMessagesMT(new CmdOpts(args, null, null)); //UNIMPLEMENTED
         runner.run();
     }
 
-    protected ProducePersonMessagesMT(HashMap<String, String> map) {
+    protected ProducePersonMessagesMT(CmdOpts map) {
         super(map);
     }
 

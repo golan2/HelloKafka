@@ -1,6 +1,6 @@
 package golan.izik.producer;
 
-import golan.izik.Utils;
+import golan.izik.mng.Utils;
 import org.apache.commons.cli.ParseException;
 
 import java.util.*;
@@ -61,13 +61,13 @@ public class ProduceStringsMultiThreads {
         int topicsCount = Integer.parseInt(map.get(Utils.ARG_NUM_OF_TOPICS));
         int messagesPerProducer = Integer.parseInt(map.get(Utils.ARG_MESSAGE_PER_PRODUCER));
 
-        Map<String, List<ProducerTask<String>>> producers = new HashMap<>();        //map key is topic name
+        Map<String, List<ProducerTask<String>>> producers = new HashMap<>();        //cmdOpts key is topic name
         for (int t = 0; t < topicsCount; t++) {
             String topicName = topicPrefix + String.valueOf(t+1);
             ArrayList<ProducerTask<String>> tasks = new ArrayList<>(producersPerTopic);
             for (int p = 0; p < producersPerTopic; p++) {
                 List<String> messages = generateMessages(messagePrefix, messagesPerProducer);
-                ProducerTask<String> task = new ProducerTask<>(map.get(Utils.ARG_SERVER), messages, topicName);
+                ProducerTask<String> task = new ProducerTask<>(new ProduceStringMessagesMultiThreads.UUIDKeyGenerator(), map.get(Utils.ARG_SERVER), messages, topicName);
                 tasks.add(task);
             }
             producers.put(topicName, tasks);

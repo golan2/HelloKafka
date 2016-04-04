@@ -1,7 +1,9 @@
 package golan.izik.producer;
 
-import golan.izik.Utils;
+import golan.izik.mng.CmdOpts;
+import golan.izik.mng.Utils;
 
+import javax.rmi.CORBA.Util;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,16 +13,16 @@ import java.util.concurrent.Executors;
  */
 public abstract class ProduceMessagesMultiThreads<T> {
     public static final int SLEEP_TIME = 5000;
-    protected final HashMap<String, String> map;
+    protected final CmdOpts cmdOpts;
     protected ExecutorService executorService;
-    protected Map<String, List<ProducerTask<T>>> producers;
+    protected Map<String, List<ProducerTask<T>>> producers;     //key is topicName
 
-    protected ProduceMessagesMultiThreads(HashMap<String, String> map) {
-        this.map = map;
+    protected ProduceMessagesMultiThreads(CmdOpts cmdOpts) {
+        this.cmdOpts = cmdOpts;
     }
 
     public void run() throws InterruptedException {
-        int producersPerTopic = Integer.parseInt(map.get(Utils.ARG_NUM_OF_PRODUCERS));
+        int producersPerTopic = 5*Integer.parseInt(cmdOpts.get(Utils.ARG_NUM_OF_PRODUCERS));
         executorService = Executors.newFixedThreadPool(producersPerTopic);
 
         Utils.consolog("createProducers...");
@@ -36,15 +38,15 @@ public abstract class ProduceMessagesMultiThreads<T> {
     }
 
     protected Map<String, List<ProducerTask<T>>> createProducers() {
-        int producersPerTopic = Integer.parseInt(map.get(Utils.ARG_NUM_OF_PRODUCERS));
-        String topicPrefix = map.get(Utils.ARG_TOPIC_PREFIX);
-        String messagePrefix = map.get(Utils.ARG_MESSAGE_PREFIX);
-        int topicsCount = Integer.parseInt(map.get(Utils.ARG_NUM_OF_TOPICS));
-        int messagesPerProducer = Integer.parseInt(map.get(Utils.ARG_MESSAGE_PER_PRODUCER));
-        String kafkaServer = map.get(Utils.ARG_SERVER);
+        int producersPerTopic = Integer.parseInt(cmdOpts.get(Utils.ARG_NUM_OF_PRODUCERS));
+        String topicPrefix = cmdOpts.get(Utils.ARG_TOPIC_PREFIX);
+        String messagePrefix = cmdOpts.get(Utils.ARG_MESSAGE_PREFIX);
+        int topicsCount = Integer.parseInt(cmdOpts.get(Utils.ARG_NUM_OF_TOPICS));
+        int messagesPerProducer = Integer.parseInt(cmdOpts.get(Utils.ARG_MESSAGE_PER_PRODUCER));
+        String kafkaServer = cmdOpts.get(Utils.ARG_SERVER);
         ProducerTask.KeyGenerator keyGen = getKeyGen();
 
-        Map<String, List<ProducerTask<T>>> producers = new HashMap<>();        //map key is topic name
+        Map<String, List<ProducerTask<T>>> producers = new HashMap<>();        //cmdOpts key is topic name
         for (int t = 0; t < topicsCount; t++) {
 
             String topicName = topicPrefix + ((topicsCount>1) ? String.valueOf(t+1) : "");
@@ -75,7 +77,7 @@ public abstract class ProduceMessagesMultiThreads<T> {
 
     protected void awaitTermination() throws InterruptedException {
         int count = 0;
-        int maxTimeToWait  = Integer.parseInt(map.get(Utils.ARG_MAX_TIME_TO_WAIT));
+        int maxTimeToWait  = Integer.parseInt(cmdOpts.get(Utils.ARG_MAX_TIME_TO_WAIT));
         int maxRetry = maxTimeToWait*1000/SLEEP_TIME ;
         Utils.consolog("maxTimeToWait=["+maxTimeToWait+"] maxRetry=["+maxRetry+"] ");
         while (!allFinished() && count< maxRetry){
@@ -83,7 +85,17 @@ public abstract class ProduceMessagesMultiThreads<T> {
             Utils.consolog("Waiting ["+count+"]...");
             Thread.sleep(SLEEP_TIME);
         }
-        Utils.consolog("Done waiting. count=["+count+"] allFinished=["+allFinished()+"] ");
+        StringBuilder buf = new StringBuilder();
+        for (String topic : producers.keySet()) {
+            buf.append("\tTopic=["+topic+"]: ");
+            List<ProducerTask<T>> producers = this.producers.get(topic);
+            for (ProducerTask<T> producer : producers) {
+                buf.append("("+producer.getProducerId()+","+producer.getDeltaTime()/1000000000.0+") ; ");
+            }
+            buf.append("\n");
+        }
+        Utils.consolog("Done waiting. count=["+count+"] allFinished=["+allFinished()+"]");
+        Utils.consolog("Deltas:\n"+buf.toString());
     }
 
     private boolean allFinished() {

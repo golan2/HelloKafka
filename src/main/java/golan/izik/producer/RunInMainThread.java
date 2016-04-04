@@ -1,6 +1,6 @@
 package golan.izik.producer;
 
-import golan.izik.Utils;
+import golan.izik.mng.Utils;
 import org.apache.commons.cli.ParseException;
 
 import java.util.ArrayList;

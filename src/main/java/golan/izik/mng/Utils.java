@@ -1,4 +1,4 @@
-package golan.izik;
+package golan.izik.mng;
 
 import org.apache.commons.cli.*;
 
@@ -16,6 +16,7 @@ public class Utils {
     public static final String ARG_NUM_OF_PRODUCERS     = "producers";
     public static final String ARG_MESSAGE_PER_PRODUCER = "messages";
     public static final String ARG_MAX_TIME_TO_WAIT     = "max_ttw";
+    public static final String ARG_KEY_GENERATOR        = "keygen";
 
     public static String getCurrentTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//dd/MM/yyyy
