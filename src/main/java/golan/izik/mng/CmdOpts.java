@@ -16,6 +16,7 @@ public class CmdOpts {
     public CmdOpts(String[] args, Map<String, String> params, Set<String> mandatory) throws ParseException {
         Options o = new Options();
         for (String key : params.keySet()) {
+            //noinspection AccessStaticViaInstance
             o.addOption(OptionBuilder.hasArgs(1).isRequired(mandatory.contains(key)).create(key));
         }
         CommandLineParser parser = new BasicParser();
@@ -39,7 +40,7 @@ public class CmdOpts {
         sortedKeys.sort(String::compareTo);
         for (String key : sortedKeys) {
             String value = arguments.get(key);
-            buf.append("\t[" + key + "] => [" + value + "]\n");
+            buf.append("\t[").append(key).append("] => [").append(value).append("]\n");
         }
         return buf.toString();
 

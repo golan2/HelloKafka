@@ -5,9 +5,6 @@ import org.apache.commons.cli.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Created by golaniz on 09/02/2016.
- */
 public class Utils {
     public static final String ARG_SERVER               = "server";
     public static final String ARG_MESSAGE_PREFIX       = "message_prefix";
@@ -21,8 +18,7 @@ public class Utils {
     public static String getCurrentTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//dd/MM/yyyy
         Date now = new Date();
-        String strDate = sdfDate.format(now);
-        return strDate;
+        return sdfDate.format(now);
     }
 
     @SuppressWarnings("AccessStaticViaInstance")
