@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by golaniz on 24/02/2016.
- */
 public class CmdOpts {
     private final Map<String, String> arguments;
 

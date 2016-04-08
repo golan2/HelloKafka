@@ -97,6 +97,7 @@ public class LowLevelConsumer {
         return new FetchRequestBuilder().clientId(CLIENT_ID).addFetch(opts.get(CLA_TOPIC), Integer.parseInt(opts.get(CLA_PARTITION)), offset, CHUNK_SIZE).build();
     }
 
+
     private static String extractPayload(MessageAndOffset messageAndOffset) throws UnsupportedEncodingException {
         ByteBuffer payload = messageAndOffset.message().payload();
         byte[] bytes = new byte[payload.limit()];
@@ -113,11 +114,6 @@ public class LowLevelConsumer {
 
 
     private static Map<String, String> getCommandLineArguments() {
-        Map<String, String> result = new HashMap<>();
-        result.put(CLA_KAFKA_HOST, DEFAULT_KAFKA_HOST);
-        result.put(CLA_KAFKA_PORT, DEFAULT_KAFKA_PORT);
-        result.put(CLA_TOPIC, DEFAULT_TOPIC);
-        result.put(CLA_PARTITION, DEFAULT_PARTITION);
-        return result;
+        return Collections.emptyMap();
     }
 }

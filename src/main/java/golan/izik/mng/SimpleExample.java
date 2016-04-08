@@ -9,6 +9,8 @@ import kafka.common.TopicAndPartition;
 import kafka.javaapi.*;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -19,18 +21,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SimpleExample {
+    private static final Logger log = LoggerFactory.getLogger(SimpleExample.class);
+
     public static void main(String args[]) {
         SimpleExample example = new SimpleExample();
         long maxReads = 1;
-        String topic = "test1";
+        String topic = "data-in-build";
         int partition = 0;
         List<String> seeds = new ArrayList<>();
-        seeds.add("myd-vm23458.hpswlabs.adapps.hp.com");
+        seeds.add("54.153.44.253");
         int port = 9092;
         try {
             example.run(maxReads, topic, partition, seeds, port);
         } catch (Exception e) {
-            Utils.consolog("Oops:" + e);
+            log.info("Oops:" + e);
             e.printStackTrace();
         }
     }
@@ -46,11 +50,11 @@ public class SimpleExample {
         //
         PartitionMetadata metadata = findLeader(a_seedBrokers, a_port, a_topic, a_partition);
         if (metadata == null) {
-            Utils.consolog("Can't find metadata for Topic and Partition. Exiting");
+            log.info("Can't find metadata for Topic and Partition. Exiting");
             return;
         }
         if (metadata.leader() == null) {
-            Utils.consolog("Can't find Leader for Topic and Partition. Exiting");
+            log.info("Can't find Leader for Topic and Partition. Exiting");
             return;
         }
         String leadBroker = metadata.leader().host();
@@ -74,7 +78,7 @@ public class SimpleExample {
                 numErrors++;
                 // Something went wrong!
                 short code = fetchResponse.errorCode(a_topic, a_partition);
-                Utils.consolog("Error fetching data from the Broker:" + leadBroker + " Reason: " + code);
+                log.info("Error fetching data from the Broker:" + leadBroker + " Reason: " + code);
                 if (numErrors > 5) break;
                 if (code == ErrorMapping.OffsetOutOfRangeCode())  {
                     // We asked for an invalid offset. For simple case ask for the last element to reset
@@ -92,7 +96,7 @@ public class SimpleExample {
             for (MessageAndOffset messageAndOffset : fetchResponse.messageSet(a_topic, a_partition)) {
                 long currentOffset = messageAndOffset.offset();
                 if (currentOffset < readOffset) {
-                    Utils.consolog("Found an old offset: " + currentOffset + " Expecting: " + readOffset);
+                    log.info("Found an old offset: " + currentOffset + " Expecting: " + readOffset);
                     continue;
                 }
                 readOffset = messageAndOffset.nextOffset();
@@ -100,7 +104,7 @@ public class SimpleExample {
 
                 byte[] bytes = new byte[payload.limit()];
                 payload.get(bytes);
-                Utils.consolog(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes, "UTF-8"));
+                log.info(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes, "UTF-8"));
                 numRead++;
                 a_maxReads--;
             }
@@ -125,7 +129,7 @@ public class SimpleExample {
         OffsetResponse response = consumer.getOffsetsBefore(request);
 
         if (response.hasError()) {
-            Utils.consolog("Error fetching data Offset Data the Broker. Reason: " + response.errorCode(topic, partition) );
+            log.info("Error fetching data Offset Data the Broker. Reason: " + response.errorCode(topic, partition) );
             return 0;
         }
         long[] offsets = response.offsets(topic, partition);
@@ -134,7 +138,7 @@ public class SimpleExample {
 
     private String findNewLeader(String a_oldLeader, String a_topic, int a_partition, int a_port) throws Exception {
         for (int i = 0; i < 3; i++) {
-            boolean goToSleep = false;
+            boolean goToSleep;
             PartitionMetadata metadata = findLeader(m_replicaBrokers, a_port, a_topic, a_partition);
             if (metadata == null) {
                 goToSleep = true;
@@ -151,11 +155,11 @@ public class SimpleExample {
             if (goToSleep) {
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException ie) {
+                } catch (InterruptedException ignored) {
                 }
             }
         }
-        Utils.consolog("Unable to find new leader after Broker failure. Exiting");
+        log.info("Unable to find new leader after Broker failure. Exiting");
         throw new Exception("Unable to find new leader after Broker failure. Exiting");
     }
 
@@ -180,7 +184,7 @@ public class SimpleExample {
                     }
                 }
             } catch (Exception e) {
-                Utils.consolog("Error communicating with Broker [" + seed + "] to find Leader for [" + a_topic
+                log.info("Error communicating with Broker [" + seed + "] to find Leader for [" + a_topic
                         + ", " + a_partition + "] Reason: " + e);
             } finally {
                 if (consumer != null) consumer.close();

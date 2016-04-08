@@ -1,6 +1,8 @@
 package golan.izik.mng;
 
 import org.apache.commons.cli.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -46,6 +48,7 @@ public class Utils {
     }
 
     public static void consolog(String s) {
+
         System.out.println(getCurrentDateAndTime()+"~~T["+Thread.currentThread().getName()+"] "  + s );
     }
 
