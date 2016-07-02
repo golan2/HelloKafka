@@ -7,6 +7,8 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Properties;
 
@@ -14,7 +16,7 @@ import java.util.Properties;
  * Created by golaniz on 09/02/2016.
  */
 public class ProducerTask<T> implements Runnable {
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     private static int producer_index = 1;
     private final int producerId;
     private final String kafkaServer;
@@ -42,6 +44,7 @@ public class ProducerTask<T> implements Runnable {
             props.put("retries", 0);
             props.put("batch.size", 16384);
             props.put("linger.ms", 1);
+            props.put("metadata.fetch.timeout.ms", 30000);
             props.put("buffer.memory", 33554432);
             props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
@@ -93,8 +96,27 @@ public class ProducerTask<T> implements Runnable {
         @Override
         public void onCompletion(RecordMetadata r, Exception e) {
             long nano = System.nanoTime();
-            if (DEBUG) Utils.consolog("\t[ACK] partition=[" + r.partition() + "] offset=[" + r.offset() + "] nano=[" + nano + "]");
+            if (DEBUG) {
+                if (e!=null) Utils.consolog("ERROR: " + e.getMessage() + " | \n" + stackTraceToString(e) );
+                if (r!=null) Utils.consolog("\t[ACK] partition=[" + r.partition() + "] offset=[" + r.offset() + "] nano=[" + nano + "]");
+            }
             if(nano>lastTimeNano) lastTimeNano = nano;
+        }
+
+        private String stackTraceToString(Throwable e) {
+            if (e==null) return "[null]";
+            try {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                while (e.getCause()!=e && e.getCause()!=null) {
+                    e = e.getCause();
+                    e.printStackTrace(pw);
+                }
+                return sw.toString();
+            } catch (Exception e1) {
+                return e.getMessage();
+            }
         }
 
 

@@ -7,9 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-/**
- * Created by golaniz on 09/02/2016.
- */
 public class RunInMainThread {
 
     public static void main(String[] args) throws ParseException {

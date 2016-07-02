@@ -59,9 +59,6 @@ public class ConsumerWithOffset {
         try (final KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
             final TopicPartition topicPartition = new TopicPartition(topic, partition);
 
-
-
-
             consumer.subscribe(Collections.singletonList(topic), new ConsumerRebalanceListener() {
                 @Override
                 public void onPartitionsRevoked(Collection<TopicPartition> collection) {}

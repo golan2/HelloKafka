@@ -4,6 +4,8 @@ import golan.izik.mng.CmdOpts;
 import golan.izik.mng.Utils;
 import org.apache.commons.cli.ParseException;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +21,8 @@ public class ProduceStringMessagesMultiThreads extends ProduceMessagesMultiThrea
     public static void main(String[] args) throws ParseException, InterruptedException {
         CmdOpts cmdOpts = new CmdOpts(args, getParamsMap(), Collections.emptySet());
 //        HashMap<String, String> cmdOpts = Utils.parseCommandLineArgs(args);
+        System.out.println("====================================================================");
+        System.out.printf("");
         ProduceStringMessagesMultiThreads runner = new ProduceStringMessagesMultiThreads(cmdOpts);
         runner.run();
     }
