@@ -16,7 +16,7 @@ import java.util.Properties;
  * Created by golaniz on 09/02/2016.
  */
 public class ProducerTask<T> implements Runnable {
-    public static final boolean DEBUG = true;
+    private static final boolean DEBUG = true;
     private static int producer_index = 1;
     private final int producerId;
     private final String kafkaServer;
