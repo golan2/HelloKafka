@@ -1,6 +1,5 @@
 package golan.izik.consumer;
 
-import config.MyKafkaConfig;
 import golan.izik.mng.CmdOpts;
 import org.apache.commons.cli.ParseException;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
@@ -28,8 +27,6 @@ public class ConsumerWithOffset {
     private static final String CLA_TOPIC         = "topic";
     private static final String CLA_PARTITION     = "partition";
     private static final String CLA_BEGIN         = "begin";
-    private static final String DEFAULT_KAFKA     = MyKafkaConfig.KAFKA_SERVERS;
-    private static final String DEFAULT_TOPIC     = MyKafkaConfig.TOPIC_NAME;
     private static final String DEFAULT_PARTITION = "0";
     private static final String DEFAULT_BEGIN     = "0";
 
@@ -85,8 +82,8 @@ public class ConsumerWithOffset {
 
     private static Map<String, String> getCommandLineArguments() {
         Map<String, String> result = new HashMap<>();
-        result.put(CLA_KAFKA, DEFAULT_KAFKA);
-        result.put(CLA_TOPIC, DEFAULT_TOPIC);
+        result.put(CLA_KAFKA, "localhost:19092");
+        result.put(CLA_TOPIC, "izik-test-2");
         result.put(CLA_PARTITION, DEFAULT_PARTITION);
         result.put(CLA_BEGIN, DEFAULT_BEGIN);
         return result;

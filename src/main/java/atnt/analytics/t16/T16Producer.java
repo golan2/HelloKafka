@@ -1,6 +1,5 @@
 package atnt.analytics.t16;
 
-
 import config.MyKafkaConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -19,10 +18,12 @@ public class T16Producer implements Runnable {
 
     private static final String[] devices       = {"D1", "D2", "D3", "D4"};
 
+    private final MyKafkaConfig kafkaConfig;
     private final int messageCount;
     private final int messageTPS;       //txn per sec
 
-    T16Producer(int messageCount, int messageTPS) {
+    T16Producer(MyKafkaConfig kafkaConfig, int messageCount, int messageTPS) {
+        this.kafkaConfig = kafkaConfig;
         this.messageCount = messageCount;
         this.messageTPS = messageTPS;
     }
@@ -32,8 +33,8 @@ public class T16Producer implements Runnable {
         try (Producer<String, String> producer = new KafkaProducer<>(getKafkaProperties())) {
             for (int i = 0; i < messageCount; i++) {
                 Tuple2<String, String> msg = generateMessage();
-                producer.send(new ProducerRecord<>(MyKafkaConfig.TOPIC_NAME, msg._1(), msg._2()));
-                Thread.sleep(Math.round(1000/messageTPS));
+                producer.send(new ProducerRecord<>(this.kafkaConfig.getTopic(), msg._1(), msg._2()));
+                Thread.sleep(Math.round(1000.0/messageTPS));
                 System.out.println("~~Producer ["+hashCode()+"] sent message ["+msg._1()+"]");
             }
 
@@ -45,7 +46,7 @@ public class T16Producer implements Runnable {
 
     private Properties getKafkaProperties() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", MyKafkaConfig.KAFKA_SERVERS);
+        props.put("bootstrap.servers", this.kafkaConfig.getBootstrapServers());
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
@@ -56,7 +57,7 @@ public class T16Producer implements Runnable {
         return props;
     }
 
-    public static Tuple2<String, String> generateMessage() {
+    private static Tuple2<String, String> generateMessage() {
         int deviceIndex = ThreadLocalRandom.current().nextInt(0, devices.length-1);
         int rawDataLength = ThreadLocalRandom.current().nextInt(50, 70);
         String uuid = UUID.randomUUID().toString();
@@ -74,7 +75,7 @@ public class T16Producer implements Runnable {
         return sb.toString().substring(0, length);
     }
 
-    public final static String messageTemplate = ("" +
+    private final static String messageTemplate = ("" +
             "{\n" +
             "  \"q1w2e3_timestamp\": \"%d\",\n" +                               //TIMESTAMP
             "  \"q1w2e3_environment\": \"n\",\n" +
