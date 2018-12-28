@@ -1,4 +1,7 @@
-package atnt.analytics.t16;
+package com.atnt.analytics.t16;
+
+import config.MyKafkaConfig;
+import org.apache.commons.cli.ParseException;
 
 import config.MyKafkaConfig;
 import org.apache.commons.cli.ParseException;
