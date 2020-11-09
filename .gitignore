@@ -30,6 +30,8 @@ hs_err_pid*
 .idea/
 ## File-based project format:
 *.iws
+*.iml
+*.ipr
 ## Plugin-specific files:
 # IntelliJ
 out/
